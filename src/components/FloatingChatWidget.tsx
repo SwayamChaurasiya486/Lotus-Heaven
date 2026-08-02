@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAIChat } from '@/hooks/useAIChat';
 import { Avatar } from '@/components/ui/avatar';
 
@@ -12,6 +11,17 @@ export const FloatingChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const { messages, sendMessage, isLoading } = useAIChat();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,8 +91,8 @@ export const FloatingChatWidget = () => {
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 p-0 flex flex-col">
-                <ScrollArea className="flex-1 p-4">
+              <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-4 select-text">
                   <div className="space-y-4">
                     {messages.length === 0 && (
                       <div className="text-center py-8">
@@ -151,8 +161,9 @@ export const FloatingChatWidget = () => {
                         </div>
                       </div>
                     )}
+                    <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
                 <form onSubmit={handleSubmit} className="p-4 border-t border-border/50">
                   <div className="flex gap-2">

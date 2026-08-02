@@ -116,53 +116,58 @@ export const useAIChat = () => {
     addMessage('user', content);
     setIsTyping(true);
 
-    // Simulate slight delay for natural feel
-    await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 800));
+    try {
+      // Simulate slight delay for natural feel
+      await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 800));
 
-    const msg = content.toLowerCase();
-    
-    // Check if user has intent to book
-    const isBookingIntent = msg.includes('book') || msg.includes('stay in') || msg.includes('reserve') || msg.includes('checkout');
-    
-    if (isBookingIntent) {
-      let rooms: any[] = [];
-      try {
-        const result = await roomsApi.getAll();
-        rooms = Array.isArray(result) ? result : (result.data ?? []);
-      } catch (err) {
-        console.error('Failed to fetch rooms in AI chat:', err);
-      }
-      if (!rooms || rooms.length === 0) {
-        rooms = mockRooms;
-      }
+      const msg = content.toLowerCase();
       
-      let matchedRoom = null;
-      if (msg.includes('deluxe') || msg.includes('king')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('deluxe') || r.name.toLowerCase().includes('king'));
-      } else if (msg.includes('presidential')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('presidential'));
-      } else if (msg.includes('executive') || msg.includes('double')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('executive') || r.name.toLowerCase().includes('double'));
-      } else if (msg.includes('garden')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('garden'));
-      } else if (msg.includes('twin') || msg.includes('standard')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('standard') || r.name.toLowerCase().includes('twin'));
-      } else if (msg.includes('penthouse')) {
-        matchedRoom = rooms.find(r => r.name.toLowerCase().includes('penthouse'));
-      }
+      // Check if user has intent to book
+      const isBookingIntent = msg.includes('book') || msg.includes('stay in') || msg.includes('reserve') || msg.includes('checkout');
       
-      if (matchedRoom) {
-        useGlobalBookingStore.getState().openBooking(matchedRoom);
-        const response = `I've opened the booking assistant for the **${matchedRoom.name}** for you! Please complete the dates and guest count in the checkout window.`;
-        addMessage('assistant', response);
-        setIsTyping(false);
-        return;
+      if (isBookingIntent) {
+        let rooms: any[] = [];
+        try {
+          const result = await roomsApi.getAll();
+          rooms = Array.isArray(result) ? result : (result.data ?? []);
+        } catch (err) {
+          console.error('Failed to fetch rooms in AI chat:', err);
+        }
+        if (!rooms || rooms.length === 0) {
+          rooms = mockRooms;
+        }
+        
+        let matchedRoom = null;
+        if (msg.includes('deluxe') || msg.includes('king')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('deluxe') || r.name.toLowerCase().includes('king'));
+        } else if (msg.includes('presidential')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('presidential'));
+        } else if (msg.includes('executive') || msg.includes('double')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('executive') || r.name.toLowerCase().includes('double'));
+        } else if (msg.includes('garden')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('garden'));
+        } else if (msg.includes('twin') || msg.includes('standard')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('standard') || r.name.toLowerCase().includes('twin'));
+        } else if (msg.includes('penthouse')) {
+          matchedRoom = rooms.find(r => r.name.toLowerCase().includes('penthouse'));
+        }
+        
+        if (matchedRoom) {
+          useGlobalBookingStore.getState().openBooking(matchedRoom);
+          const response = `I've opened the booking assistant for the **${matchedRoom.name}** for you! Please complete the dates and guest count in the checkout window.`;
+          addMessage('assistant', response);
+          return;
+        }
       }
+
+      const response = generateResponse(content);
+      addMessage('assistant', response);
+    } catch (err) {
+      console.error('Error in AI Chat sendMessage:', err);
+      addMessage('assistant', 'Sorry, I encountered an issue processing your request. Please try again.');
+    } finally {
+      setIsTyping(false);
     }
-
-    const response = generateResponse(content);
-    addMessage('assistant', response);
-    setIsTyping(false);
   };
 
   const clearChat = () => {

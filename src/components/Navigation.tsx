@@ -5,17 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Compass, Menu, LogOut, Heart, MapPin, DollarSign, Camera, Sparkles, CalendarDays, X } from 'lucide-react';
 import { VoiceCommandButton } from './VoiceCommandButton';
 import { WeatherWidget } from './WeatherWidget';
-import { LanguageSelector } from './LanguageSelector';
 import { NotificationCenter } from './NotificationCenter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguageStore } from '@/lib/stores/languageStore';
 import { useWishlistStore } from '@/lib/stores/wishlistStore';
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMegaOpen, setIsMegaOpen] = useState(false);
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
   const { favorites } = useWishlistStore();
   const { user, isAuthenticated, logout: authLogout, checkAuth } = useAuthStore();
 
@@ -143,7 +140,6 @@ export const Navigation = () => {
             
             <div className="w-px h-5 bg-border/40 mx-1" />
             
-            <LanguageSelector />
             <VoiceCommandButton />
             {isLoggedIn && <NotificationCenter />}
             
